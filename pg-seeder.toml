@@ -1,0 +1,5 @@
+[seeders]
+task_folder = "src/seeders/task"
+success_folder = "src/seeders/success"
+created_at_name = "created_at"
+updated_at_name = "updated_at"

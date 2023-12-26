@@ -1,0 +1,22 @@
+[package]
+name = "sqlx-pg-seeder"
+version = "0.1.0"
+authors = ["SSaple <sideproject0214@gmail.com>"]
+edition = "2021"
+
+description = "The crate that assists in creating seeders for PostgreSQL databases using SQLx"
+documentation = "https://sideproject0214.github.io/sqlx_pg_seeder"
+repository = "https://github.com/sideproject0214/sqlx-pg-seeder"
+
+
+[dependencies]
+serde_json = "1.0"
+sqlx = { version = "0.7.2", features = [
+    "runtime-tokio-rustls",
+    "json",
+    "postgres",
+    "macros",
+    "uuid",
+    "chrono",
+] }
+config = "0.13"
