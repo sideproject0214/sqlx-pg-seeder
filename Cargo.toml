@@ -3,11 +3,15 @@ name = "sqlx-pg-seeder"
 version = "0.1.0"
 authors = ["SSaple <sideproject0214@gmail.com>"]
 edition = "2021"
-
+rust-version = "1.74"
+readme = "README.md"
+keywords = ["sqlx", "seeder", "postgres", "pg-seeder", "sqlx-pg-seeder"]
+exclude = ["/ko", "/example", "/target", "./cargo-docs.sh", "./rustfmt.toml"]
 description = "The crate that assists in creating seeders for PostgreSQL databases using SQLx"
 documentation = "https://sideproject0214.github.io/sqlx-pg-seeder"
+homepage = "https://sideproject0214.github.io/sqlx-pg-seeder"
 repository = "https://github.com/sideproject0214/sqlx-pg-seeder"
-
+license = "MIT"
 
 [dependencies]
 serde_json = "1.0"
