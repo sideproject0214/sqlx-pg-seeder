@@ -67,18 +67,33 @@ impl SeederConfigFn for SeederConfig {
 
 fn read_config() -> Result<SeederConfig, config::ConfigError> {
   let mut new_seeder_config = SeederConfig::new();
-  let settings = Config::builder()
+  let settings = match Config::builder()
     .add_source(config::File::with_name("pg-seeder"))
     .build()
-    .unwrap();
+  {
+    Ok(config) => config,
+    Err(err) => {
+      eprintln!("Error: Failed to load configuration: {}", err);
+      Config::default()
+    }
+  };
 
-  new_seeder_config.task_folder_path = settings.get::<String>("seeders.task_folder")?;
-  new_seeder_config.success_folder_path =
-    settings.get::<String>("seeders.success_folder")?;
-  new_seeder_config.created_at_name =
-    settings.get::<String>("seeders.created_at_name")?;
-  new_seeder_config.updated_at_name =
-    settings.get::<String>("seeders.updated_at_name")?;
+  match settings.get::<String>("seeders.task_folder") {
+    Ok(value) => new_seeder_config.task_folder_path = value,
+    Err(_) => new_seeder_config.task_folder_path = "src/seeders/task".to_string(),
+  };
+  match settings.get::<String>("seeders.success_folder") {
+    Ok(value) => new_seeder_config.success_folder_path = value,
+    Err(_) => new_seeder_config.success_folder_path = "src/seeders/success".to_string(),
+  };
+  match settings.get::<String>("seeders.created_at_name") {
+    Ok(value) => new_seeder_config.created_at_name = value,
+    Err(_) => new_seeder_config.created_at_name = "created_at".to_string(),
+  };
+  match settings.get::<String>("seeders.updated_at_name") {
+    Ok(value) => new_seeder_config.updated_at_name = value,
+    Err(_) => new_seeder_config.updated_at_name = "updated_at".to_string(),
+  };
 
   Ok(new_seeder_config)
 }
@@ -223,6 +238,7 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
               }
             }
           }
+          println!("✅ Seed completed for the {:?}.json", file_name);
         }
 
         let new_path = success_folder.join(entry.file_name());

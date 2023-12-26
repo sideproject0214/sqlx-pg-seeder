@@ -15,7 +15,7 @@ Upon restarting the server, if no JSON files exist in seeder/task, the crate ski
 
 ```toml
 [dependencies]
-sqlx-pg-seeder = "0.1.0"
+sqlx-pg-seeder = "0.1.1"
 ```
 ```bash
 cargo add sqlx-pg-seeder
