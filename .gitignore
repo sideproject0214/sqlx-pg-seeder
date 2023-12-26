@@ -1,2 +1,4 @@
 /target
 cargo-docs.sh
+/deprecated
+deprecated/*
