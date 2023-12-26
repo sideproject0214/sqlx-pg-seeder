@@ -85,6 +85,7 @@ create table if not exists posts (
 >[ Caution ]<br> Use types: bigint (integer), double precision (). Rust currently supports type coercion as as_i64, as_f64 by default, so it cannot be defined smaller than these types.
 
 ### (4) Server Setup
+#### (4-1) How to make a pool and migrations
 ```rust
 use sqlx::{migrate, FromRow, Pool, Postgres};
 
@@ -130,7 +131,7 @@ pub async fn get_db_conn(my_env: &EnvValue) -> Pool<Postgres> {
   let pg_url = format!(
     "{pg_dialect}://{pg_username}:{pg_password}@{pg_host}:{pg_port}/{pg_database}"
   );
-  println!("DB URL : {:?}", &pg_url);
+
   let my_pool = sqlx::postgres::PgPool::connect(&pg_url).await.unwrap();
 
   let migrate = migrate!("./src/migrations").run(&my_pool).await;
@@ -142,24 +143,35 @@ pub async fn get_db_conn(my_env: &EnvValue) -> Pool<Postgres> {
 
   my_pool
 }
+```
+
+<br>
+
+ #### (4-2) How to connect a seeder
+
+```rust
+use sqlx_pg_seeder::seeder; 
+
+... 
 
 #[tokio::main]
 async fn main() {
-  // setting
+  
+  ...
+
   let pool = get_db_conn(&my_env_value).await;
+
   seeder(&pool).await;
 
-  // setting
 }
 
 ```
 
-```rust 
-  let pool = get_db_conn(&my_env_value).await;
-  seeder(&pool).await;
-```
+  
+
 <br>
-The key point here is to place a pool connecting PostgreSQL and sqlx within the seeder.<br><br> This is essential for using sqlx in frameworks like axum, actix, etc. The pool (which creates a pool connecting to the database in advance, retrieves the connection whenever a connection request comes in, utilizes it, and returns it afterward, efficiently managing and reusing database connections) is crucial.<br><br> ※ The general method of creating a pool has been outlined, but specific details may vary slightly for each server framework. Here, we're focusing on axum.
+
+**The key point** here is to place a pool connecting PostgreSQL and sqlx within the seeder.<br><br> This is essential for using sqlx in frameworks like axum, actix, etc. The pool (which creates a pool connecting to the database in advance, retrieves the connection whenever a connection request comes in, utilizes it, and returns it afterward, efficiently managing and reusing database connections) is crucial.<br><br> ※ The general method of creating a pool has been outlined, but specific details may vary slightly for each server framework. Here, we're focusing on axum.
 
 ### (5) Seed Files
 The seed file name corresponds to the table's name and matches the field names in the JSON. By default, the initial seed file is located in the 'src/seeder/task' folder according to the default settings.
