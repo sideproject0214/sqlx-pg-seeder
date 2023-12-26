@@ -11,20 +11,14 @@ Upon restarting the server, if no JSON files exist in seeder/task, the crate ski
 
 ## 2. Installation and Usage
 
-### (1) Dependencies
+### (1) Dependencies(Please install using one of the following options)
 
 ```toml
 [dependencies]
-serde_json = "1.0"
-sqlx = { version = "0.7.2", features = [
-    "runtime-tokio-rustls",
-    "json",
-    "postgres",
-    "macros",
-    "uuid",
-    "chrono",
-] }
-config = "0.13"
+sqlx-pg-seeder = "0.1.0"
+```
+```bash
+cargo add sqlx-pg-seeder
 ```
 
 ### (2) pg-seeder.toml (Configuration for Seed Folder Location, etc.)

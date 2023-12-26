@@ -5,7 +5,7 @@ authors = ["SSaple <sideproject0214@gmail.com>"]
 edition = "2021"
 
 description = "The crate that assists in creating seeders for PostgreSQL databases using SQLx"
-documentation = "https://sideproject0214.github.io/sqlx_pg_seeder"
+documentation = "https://sideproject0214.github.io/sqlx-pg-seeder"
 repository = "https://github.com/sideproject0214/sqlx-pg-seeder"
 
 

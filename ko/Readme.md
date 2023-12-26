@@ -10,22 +10,15 @@
 
 ## 2. 설치 및 사용 방법
 
-### (1) Dependencies
+### (1) Dependencies : 아래 둘중 하나의 방법으로 설치
 
 ```toml
 [dependencies]
-serde_json = "1.0"
-sqlx = { version = "0.7.2", features = [
-    "runtime-tokio-rustls",
-    "json",
-    "postgres",
-    "macros",
-    "uuid",
-    "chrono",
-] }
-config = "0.13"
+sqlx-pg-seeder = "0.1.0"
 ```
-
+```bash
+cargo add sqlx-pg-seeder
+```
 ### (2) pg-seeder.toml (Seed 폴더 위치 등 설정)
 
 ```toml
