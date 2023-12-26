@@ -88,6 +88,7 @@ create table if not exists posts (
 > 숫자 : bigint(정수), double precision() 타입을 사용한다. 이는 러스트는 현재 기본적으로 타입화인시 as_i64, as_f64만 지원하기에 이보다 작게 정의할 수 없다. 
 
 ### (4) 서버 세팅
+#### (4-1) How to make a pool and migrations
 ```rust
 use sqlx::{migrate, FromRow, Pool, Postgres};
 
@@ -145,21 +146,30 @@ pub async fn get_db_conn(my_env: &EnvValue) -> Pool<Postgres> {
 
   my_pool
 }
+```
+<br>
+
+#### (4-2) How to connect a seeder
+
+
+
+
+```rust
+use sqlx_pg_seeder::seeder; 
+
+... 
 
 #[tokio::main]
 async fn main() {
-  // setting
+  
+  ...
+
   let pool = get_db_conn(&my_env_value).await;
+
   seeder(&pool).await;
 
-  // setting
 }
 
-```
-
-```rust 
-  let pool = get_db_conn(&my_env_value).await;
-  seeder(&pool).await;
 ```
 <br>
 여기서 핵심은 다음과 같이 seeder 안에 postgres와 sqlx를 연결하는 pool를 넣어야 한다는 것이다.<br><br>
