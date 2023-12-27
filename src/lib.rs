@@ -31,7 +31,6 @@ impl SeederFn for Seeder {
   }
 }
 
-// Implementation of types defined in external crates like DateTime and FixedOffset from chrono within the current code scope is not possible. This is one of the fundamental rules of Rust, requiring the definition of a new trait specific to these types. To achieve this, you need to enable the 'chrono' module in your Cargo.toml and then use the 'DateTime<FixedOffset>' time-related types. Afterwards, define and use a new type for 'DateTime<FixedOffset>' from chrono. Failing to do so will result in errors because the default DateTime<FixedOffset> lacks a trait for encoding as a timestamp.
 trait MyDateTimeEncode {
   fn my_encode(&self) -> String;
 }
@@ -46,6 +45,8 @@ impl MyDateTimeEncode for DateTime<FixedOffset> {
 struct SeederConfig {
   task_folder_path: String,
   success_folder_path: String,
+  jsonb_name: String,
+  array_string_name: String,
   created_at_name: String,
   updated_at_name: String,
 }
@@ -59,6 +60,8 @@ impl SeederConfigFn for SeederConfig {
     SeederConfig {
       task_folder_path: String::new(),
       success_folder_path: String::new(),
+      jsonb_name: String::new(),
+      array_string_name: String::new(),
       created_at_name: String::new(),
       updated_at_name: String::new(),
     }
@@ -94,6 +97,14 @@ fn read_config() -> Result<SeederConfig, config::ConfigError> {
     Ok(value) => new_seeder_config.updated_at_name = value,
     Err(_) => new_seeder_config.updated_at_name = "updated_at".to_string(),
   };
+  match settings.get::<String>("seeders.jsonb_name") {
+    Ok(value) => new_seeder_config.jsonb_name = value,
+    Err(_) => new_seeder_config.jsonb_name = "size".to_string(),
+  };
+  match settings.get::<String>("seeders.array_string_name") {
+    Ok(value) => new_seeder_config.array_string_name = value,
+    Err(_) => new_seeder_config.array_string_name = "thumbnail_src".to_string(),
+  };
 
   Ok(new_seeder_config)
 }
@@ -101,8 +112,10 @@ fn read_config() -> Result<SeederConfig, config::ConfigError> {
 #[warn(unused_variables)]
 pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
   let seed_config = read_config().unwrap();
+  println!("read config {:?}", seed_config.success_folder_path);
 
   let mut new_seeder = Seeder::new();
+
   let seeder_folder = current_dir()
     .and_then(|a| Ok(a.join(seed_config.task_folder_path)))
     .expect("No seed_folder exists");
@@ -142,15 +155,28 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
                       println!("Field Names: {:?}", &field_names);
                       println!("Field Values: {:?}", &field_values);
 
-                      let placeholders = (1..=field_values.len())
-                        .enumerate()
-                        .map(|(idx, n)| match field_names[idx] {
-                          "size" => format!("${}::JSONB", n),
-                          "thumbnail_src" => format!("${}::TEXT[]", n),
+                      let mut placeholders = String::new();
+
+                      for (idx, n) in (1..=field_values.len()).enumerate() {
+                        let field_name = &field_names[idx];
+
+                        let placeholder = match field_name {
+                          _ if field_name == &seed_config.jsonb_name => {
+                            format!("${}::JSONB", n)
+                          }
+
+                          field if field == &seed_config.array_string_name => {
+                            format!("${}::TEXT[]", n)
+                          }
                           _ => format!("${}", n),
-                        })
-                        .collect::<Vec<String>>()
-                        .join(", ");
+                        };
+
+                        placeholders.push_str(&placeholder);
+
+                        if idx < field_values.len() - 1 {
+                          placeholders.push_str(", ");
+                        }
+                      }
 
                       let query = format!(
                         "insert into {} ({}) values ({})",
@@ -158,6 +184,7 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
                         &field_names.join(", "),
                         placeholders
                       );
+
                       println!("postgres query : {:?}", &query);
 
                       let mut query = sqlx::query(&query);
@@ -193,18 +220,18 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
                                       chrono::DateTime::parse_from_rfc3339(uuid_string)
                                     {
                                       query = query.bind(timestamp);
-                                      // println!(
-                                      //   "string: created_at!!! true, filed_name : {:?}",
-                                      //   field_names[index]
-                                      // )
+                                      println!(
+                                        "string: created_at!!! true, filed_name : {:?}",
+                                        field_names[index]
+                                      )
                                     }
                                   }
                                   false => {
                                     query = query.bind(uuid_string);
-                                    // println!(
-                                    //   "string: created_at!!! false, filed_name : {:?}",
-                                    //   field_names[index]
-                                    // )
+                                    println!(
+                                      "string: created_at!!! false, filed_name : {:?}",
+                                      field_names[index]
+                                    )
                                   }
                                 },
                               }
@@ -219,6 +246,7 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
                               let json_string = serde_json::to_string(obj_value)
                                 .expect("Failed to serialize JSON object to string");
 
+                              // Bind the JSON string to the SQL query
                               query = query.bind(json_string);
                             }
                             _ => {
@@ -242,7 +270,7 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
         }
 
         let new_path = success_folder.join(entry.file_name());
-
+        println!("success folder : {:?}", new_path);
         if let Err(err) = fs::rename(entry.path(), new_path) {
           println!("Failed to move file: {}", err);
         };
@@ -252,8 +280,12 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
     }
   }
 
-  print!("✅ Seeder Work Success! ✅ \n");
+  println!(
+    "file_name: {:?} parts : {:?}",
+    new_seeder.file_names, new_seeder.table_names
+  );
 
+  print!("✅ Seeder Work Success! ✅ \n");
   Ok(())
 }
 
@@ -265,30 +297,22 @@ pub fn read_json_file() -> Vec<Value> {
   let mut json_values: Vec<Value> = Vec::new();
 
   if let Ok(entries) = fs::read_dir(dir_path) {
-    // 각 파일을 처리합니다.
     for entry in entries {
       if let Ok(entry) = entry {
         let file_path = entry.path();
 
-        // 파일 확장자 확인 (JSON 파일만 처리하도록)
         if let Some(ext) = file_path.extension() {
           if ext == "json" {
-            // 파일을 열어서 읽기 모드로 엽니다
             let mut file = fs::File::open(&file_path).expect("파일을 열 수가 없습니다");
 
-            // 파일 내용을 읽어서 String 으로 저장합니다.
             let mut contents = String::new();
             file
               .read_to_string(&mut contents)
               .expect("파일을 읽는데 문제가 발생했습니다");
 
-            // JSON 문자열(json_data)을 Data 구조체로 deserialize하는 작업을 해.
-            // serde_json::from_str은 주어진 JSON 문자열을 Rust의 데이터 구조체로
-            // 변환해줘.
             let json_value: Value =
               serde_json::from_str(&contents).expect("JSON 파싱에 실패했습니다");
 
-            // println!("{:?} JSON 데이터: ", json_value);
             json_values.push(json_value);
           }
         }

@@ -2,6 +2,9 @@
 
 This crate facilitates easy data input using Sqlx and Postgres.
 
+## 0. Changes [2023-12-27 14:42:59]
+- 0.1.3.version : The issue where the settings for JSONB and array field names were in string format in version 0.1.2. has been fixed. <br> Starting from version 0.1.3., users can now specify the JSONB and array field names within 'pg-seeder.toml' for customization
+
 ## 1. Workflow
 
 This crate primarily operates with API servers (e.g., axum, actix). When you place seed files in the designated folder (seeder/task) in the desired JSON format, upon successful completion of the seed task, the file moves from seeder/task to seeder/success.
@@ -15,7 +18,7 @@ Upon restarting the server, if no JSON files exist in seeder/task, the crate ski
 
 ```toml
 [dependencies]
-sqlx-pg-seeder = "0.1.1"
+sqlx-pg-seeder = "0.1.2"
 ```
 ```bash
 cargo add sqlx-pg-seeder
@@ -28,6 +31,8 @@ task_folder = "src/seeders/task"
 success_folder = "src/seeders/success"
 created_at_name = "created_at"
 updated_at_name = "updated_at"
+jsonb_name = "size"
+array_string_name = "thumbnail_src"
 ```
 
 **task_folder**: Location for placing seed files.<br><br>
