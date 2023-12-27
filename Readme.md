@@ -4,6 +4,7 @@ This crate facilitates easy data input using Sqlx and Postgres.
 
 ## 0. Changes [2023-12-27 14:42:59]
 - 0.1.3.version : The issue where the settings for JSONB and array field names were in string format in version 0.1.2. has been fixed. <br> Starting from version 0.1.3., users can now specify the JSONB and array field names within 'pg-seeder.toml' for customization
+- 0.1.4.version : Remove unnecessary println, change some Korean print statements to English
 
 ## 1. Workflow
 

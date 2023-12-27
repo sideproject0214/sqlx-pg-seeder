@@ -112,7 +112,7 @@ fn read_config() -> Result<SeederConfig, config::ConfigError> {
 #[warn(unused_variables)]
 pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
   let seed_config = read_config().unwrap();
-  println!("read config {:?}", seed_config.success_folder_path);
+  // println!("read config {:?}", seed_config.success_folder_path);
 
   let mut new_seeder = Seeder::new();
 
@@ -152,8 +152,8 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
                           field_values.push(value.to_string());
                         }
                       }
-                      println!("Field Names: {:?}", &field_names);
-                      println!("Field Values: {:?}", &field_values);
+                      // println!("Field Names: {:?}", &field_names);
+                      // println!("Field Values: {:?}", &field_values);
 
                       let mut placeholders = String::new();
 
@@ -185,7 +185,7 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
                         placeholders
                       );
 
-                      println!("postgres query : {:?}", &query);
+                      // println!("postgres query : {:?}", &query);
 
                       let mut query = sqlx::query(&query);
 
@@ -206,7 +206,7 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
                             }
 
                             Value::String(uuid_string) => {
-                              println!("index {:?}", field_names[index]);
+                              // println!("index {:?}", field_names[index]);
                               match Uuid::parse_str(uuid_string) {
                                 Ok(uuid_value) => {
                                   query = query.bind(uuid_value);
@@ -220,29 +220,29 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
                                       chrono::DateTime::parse_from_rfc3339(uuid_string)
                                     {
                                       query = query.bind(timestamp);
-                                      println!(
-                                        "string: created_at!!! true, filed_name : {:?}",
-                                        field_names[index]
-                                      )
+                                      // println!(
+                                      //   "string: created_at!!! true, filed_name : {:?}",
+                                      //   field_names[index]
+                                      // )
                                     }
                                   }
                                   false => {
                                     query = query.bind(uuid_string);
-                                    println!(
-                                      "string: created_at!!! false, filed_name : {:?}",
-                                      field_names[index]
-                                    )
+                                    // println!(
+                                    //   "string: created_at!!! false, filed_name : {:?}",
+                                    //   field_names[index]
+                                    // )
                                   }
                                 },
                               }
                             }
                             Value::Array(array_value) => {
-                              println!("array {:?}", field_names[index]);
+                              // println!("array {:?}", field_names[index]);
 
                               query = query.bind(array_value);
                             }
                             Value::Object(obj_value) => {
-                              println!("JSONB!!!! {:?}", field_names[index]);
+                              // println!("JSONB!!!! {:?}", field_names[index]);
                               let json_string = serde_json::to_string(obj_value)
                                 .expect("Failed to serialize JSON object to string");
 
@@ -270,7 +270,7 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
         }
 
         let new_path = success_folder.join(entry.file_name());
-        println!("success folder : {:?}", new_path);
+        // println!("success folder : {:?}", new_path);
         if let Err(err) = fs::rename(entry.path(), new_path) {
           println!("Failed to move file: {}", err);
         };
@@ -280,10 +280,10 @@ pub async fn seeder(pool: &Pool<Postgres>) -> Result<(), Box<dyn Error>> {
     }
   }
 
-  println!(
-    "file_name: {:?} parts : {:?}",
-    new_seeder.file_names, new_seeder.table_names
-  );
+  // println!(
+  //   "file_name: {:?} parts : {:?}",
+  //   new_seeder.file_names, new_seeder.table_names
+  // );
 
   print!("✅ Seeder Work Success! ✅ \n");
   Ok(())
@@ -303,15 +303,15 @@ pub fn read_json_file() -> Vec<Value> {
 
         if let Some(ext) = file_path.extension() {
           if ext == "json" {
-            let mut file = fs::File::open(&file_path).expect("파일을 열 수가 없습니다");
+            let mut file = fs::File::open(&file_path).expect("Cannot open the file");
 
             let mut contents = String::new();
             file
               .read_to_string(&mut contents)
-              .expect("파일을 읽는데 문제가 발생했습니다");
+              .expect("There was an issue reading the file");
 
             let json_value: Value =
-              serde_json::from_str(&contents).expect("JSON 파싱에 실패했습니다");
+              serde_json::from_str(&contents).expect("Failed to parse JSON");
 
             json_values.push(json_value);
           }
