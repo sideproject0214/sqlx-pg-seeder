@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["sqlx_pg_seeder"];
