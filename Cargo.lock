@@ -1427,7 +1427,7 @@ dependencies = [
 
 [[package]]
 name = "sqlx-pg-seeder"
-version = "0.1.2"
+version = "0.1.3"
 dependencies = [
  "config",
  "serde_json",

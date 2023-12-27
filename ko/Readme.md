@@ -2,6 +2,9 @@
 
 이 크레이트는 Sqlx와 Postgres를 사용하여 데이터 입력을 간편하게 도와줍니다.
 
+## 0. Changes [2023-12-27 14:42:59]
+0.1.2.는 jsonb, arrary 에 해당되는 필드 이름을 적기 위한 설정이 string으로 되어있던 오류 수정. 0.1.3.부터는 'pg-seeder.toml' 내 jsonb 해당 필드, array 필드 이름을 적어 사용자에 맞게 수정 가능
+
 ## 1. Workflow (작동 관련 큰 흐름)
 
 이 크레이트는 기본적으로 API 서버(axum, actix 등)와 함께 작동합니다. 지정된 폴더(seeder/task)에 seed를 원하는 JSON 형식의 파일을 넣으면, seed 작업이 성공적으로 완료되면 해당 파일은 seeder/task 폴더에서 seeder/success 폴더로 이동합니다.
