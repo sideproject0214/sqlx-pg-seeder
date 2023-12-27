@@ -2,4 +2,3 @@
 cargo-docs.sh
 /deprecated
 deprecated/*
-docs
